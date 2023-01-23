@@ -1,10 +1,13 @@
 
 """ database dependencies to support sqliteDB examples """
 from random import randrange
+from datetime import date
 import os, base64
 import json
+
 from __init__ import app, db
 from sqlalchemy.exc import IntegrityError
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 ''' Tutorial: https://www.sqlalchemy.org/library.html#tutorials, try to get into Python shell and follow along '''
@@ -67,129 +70,112 @@ class Post(db.Model):
 # -- a.) db.Model is like an inner layer of the onion in ORM
 # -- b.) User represents data we want to store, something that is built on db.Model
 # -- c.) SQLAlchemy ORM is layer on top of SQLAlchemy Core, then SQLAlchemy engine, SQL
-class userInfo(db.Model):
+class User(db.Model):
     __tablename__ = 'users'  # table name is plural, class name is singular
 
     # Define the User schema with "vars" from object
     id = db.Column(db.Integer, primary_key=True)
-    _firstName = db.Column(db.String(255), unique=False, nullable=False)
-    _lastName = db.Column(db.String(255), unique=False, nullable=False)
-    _extracurricular = db.Column(db.String(255), unique=False, nullable=False)
-    _hoursPerWeek = db.Column(db.String(255), unique=False, nullable=False)
-    _coachName = db.Column(db.String(255), unique=False, nullable=False)
+    _nameOfStudent = db.Column(db.String(255), unique=False, nullable=False)
+    _nameOfClass = db.Column(db.String(255), unique=True, nullable=False)
+    _nameOfHomework = db.Column(db.String(255), unique=True, nullable=False)
+    _dateDue = db.Column(db.String(255), unique=True, nullable=False)
 
     # Defines a relationship between User record and Notes table, one-to-many (one user to many notes)
     posts = db.relationship("Post", cascade='all, delete', backref='users', lazy=True)
 
     # constructor of a User object, initializes the instance variables within object (self)
-    def __init__(user, firstName, lastName, extracurricular, hoursPerWeek, coachName):
-        user._firstName = firstName    # variables with self prefix become part of the object, 
-        user._lastName= lastName
-        user._extracurricular= extracurricular 
-        user._hoursPerWeek = hoursPerWeek
-        user._coachName = coachName
+    def __init__(self, nameOfStudent, nameOfClass, nameOfHomework, dateDue):
+        self._nameOfStudent = nameOfStudent    # variables with self prefix become part of the object, 
+        self._nameOfClass = nameOfClass
+        self._nameOfHomework = nameOfHomework
+        self._dateDue = dateDue
 
     # a name getter method, extracts name from object
     @property
-    def firstName(user):
-        return user._firstName
+    def nameOfStudent(self):
+        return self._nameOfStudent
     
-    # first name setter 
-    @firstName.setter
-    def firstName(user, firstName):
-        user._firstName = firstName
-    
-    # last name getter 
-    @property
-    def lastName(user):
-        return user._lastName
-    
-    # last name setter 
-    @lastName.setter
-    def lastName(user, lastName):
-        user._lastName = lastName
-    
-    #extracurricular getter 
-    @property
-    def extracurricular(user):
-        return user._extracurricular
-    
-    #extracurricular setter
-    @extracurricular.setter
-    def extracurricular(user, extracurricular):
-        user._extracurricular = extracurricular
-    
-    #hours per week getter    
-    @property
-    def hoursPerWeek(user):
-        return user._hoursPerWeek
-    
-    # hoursPerWeek setter
-    @hoursPerWeek.setter
-    def hoursPerWeek(user, hoursPerWeek):
-        user._hoursPerWeek = hoursPerWeek
-        
-    #coach name getter    
-    @property
-    def coachName(user):
-        return user._coachName
-    
-    # coach name setter
-    @coachName.setter
-    def coachName(user,coachName):
-        user._coachName = coachName
+    # a setter function, allows name to be updated after initial object creation
+    @nameOfStudent.setter
+    def nameOfStudent(self, nameOfStudent):
+        self._nameOfStudent = nameOfStudent
 
+    # a name getter method, extracts name from object
+    @property
+    def nameOfClass(self):
+        return self._nameOfClass
+    
+    # a setter function, allows name to be updated after initial object creation
+    @nameOfClass.setter
+    def nameOfClass(self, nameOfClass):
+        self._nameOfClass = nameOfClass
+    
+    # a getter method, extracts email from object
+    @property
+    def nameOfHomework(self):
+        return self._nameOfHomework
+    
+    # a setter function, allows name to be updated after initial object creation
+    @nameOfHomework.setter
+    def nameOfHomework(self, nameOfHomework):
+        self._nameOfHomework = nameOfHomework
+        
+        # a name getter method, extracts name from object
+    @property
+    def dateDue(self):
+        return self._dateDue
+    
+    # a setter function, allows name to be updated after initial object creation
+    @dateDue.setter
+    def dateDue(self, dateDue):
+        self._dateDue = dateDue
+    
     # output content using str(object) in human readable form, uses getter
     # output content using json dumps, this is ready for API response
-    def __str__(user):
-        return json.dumps(user.read())
+    def __str__(self):
+        return json.dumps(self.read())
 
     # CRUD create/add a new record to the table
     # returns self or None on error
-    def create(user):
+    def create(self):
         try:
             # creates a person object from User(db.Model) class, passes initializers
-            db.session.add(user)  # add prepares to persist person object to Users table
+            db.session.add(self)  # add prepares to persist person object to Users table
             db.session.commit()  # SqlAlchemy "unit of work pattern" requires a manual commit
-            return user
+            return self
         except IntegrityError:
             db.session.remove()
             return None
 
     # CRUD read converts self to dictionary
     # returns dictionary
-    def read(user):
+    def read(self):
         return {
-            "id": user.id,
-            "firstName": user.firstName,
-            "lastName": user.lastName,
-            "extracurricular": user.extracurricular,
-            "hoursPerWeek": user.hoursPerWeek,
-            "coachName": user.coachName,
-            "posts": [post.read() for post in user.posts]
+            "nameOfStudent": self.nameOfStudent,
+            "nameOfClass": self.nameOfClass,
+            "nameOfHomework": self.nameOfHomework,
+            "dateDue": self.dateDue,
         }
 
     # CRUD update: updates user name, password, phone
     # returns self
-    def update(user, firstName="", lastName="", extracurricular="", hoursPerWeek="", coachName=""):
+    def update(self, nameOfStudent="", nameOfClass="", nameOfHomework="", dateDue=""):
         """only updates values with length"""
-        if len(firstName) > 0:
-            user.firstName = firstName
-        if len(lastName) > 0:
-            user.lastName = lastName
-        if len(extracurricular) > 0:
-            user.extracurricular = extracurricular
-        if len(hoursPerWeek) > 0:
-            user.hoursPerWeek = hoursPerWeek
-        if len(coachName) > 0:
-            user.coachName = coachName
+        if len(nameOfStudent) > 0:
+            self.nameOfStudent = nameOfStudent
+        if len(nameOfClass) > 0:
+            self.nameOfClass = nameOfClass
+        if len(nameOfHomework) > 0:
+            self.nameOfHomework(nameOfHomework)
+        if len(dateDue) > 0:
+            self.dateDue = dateDue
         db.session.commit()
-        return user
+        return self
 
     # CRUD delete: remove self
     # None
-    def delete(user):
-        db.session.delete(user)
+    def delete(self):
+        db.session.delete(self)
         db.session.commit()
         return None
 
@@ -202,23 +188,22 @@ def initUsers():
     """Create database and tables"""
     db.create_all()
     """Tester data for table"""
-    u1 = userInfo(firstName='Kaylee', lastName='Hou', extracurricular='Guitar', hoursPerWeek='5', coachName='N/A')
-    u2 = userInfo(firstName='Theo', lastName='Huntalas', extracurricular='Skateboarding', hoursPerWeek='3', coachName='N/A')
-    u3 = userInfo(firstName='Ellie', lastName='Pang', extracurricular='Soccer', hoursPerWeek='8', coachName='Coach Robby')
-    u4 = userInfo(firstName='Haeryn', lastName='Yu', extracurricular='Kickboxing', hoursPerWeek='2', coachName='Coach Burr')
+    u1 = User(nameOfStudent='Sean Y', nameOfClass='APCSP', nameOfHomework='Make A Table', dateDue='1/22/23')
+    u2 = User(nameOfStudent='Ellie P', nameOfClass='AP Bio', nameOfHomework='Portfolio', dateDue='1/23/23')
+    u4 = User(nameOfStudent='Theo H', nameOfClass='AP Calc', nameOfHomework='Pg 123, #1, 2, 3', dateDue='1/20/23')
 
-    users = [u1, u2, u3, u4]
+    users = [u1, u2, u4]
 
     """Builds sample user/note(s) data"""
     for user in users:
         try:
             '''add a few 1 to 4 notes per user'''
             for num in range(randrange(1, 4)):
-                note = "#### " + user.firstName + " note " + str(num) + ". \n Generated by test data."
+                note = "#### " + user.nameOfStudent + " note " + str(num) + ". \n Generated by test data."
                 user.posts.append(Post(id=user.id, note=note, image='ncs_logo.png'))
             '''add user/post data to table'''
             user.create()
         except IntegrityError:
             '''fails with bad or duplicate data'''
             db.session.remove()
-            print(f"Records exist, duplicate email, or error: {user.firstName}")
+            print(f"Records exist, duplicate email, or error: {user.nameOfStudent}")
