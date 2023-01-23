@@ -18,31 +18,38 @@ class UserAPI:
             
             ''' Avoid garbage in, error checking '''
             # validate name
-            name = body.get('name')
-            if name is None or len(name) < 2:
+            nameOfStudent = body.get('nameOfStudent')
+            if nameOfStudent is None or len(nameOfStudent) < 2:
                 return {'message': f'Name is missing, or is less than 2 characters'}, 210
             # validate uid
-            uid = body.get('uid')
-            if uid is None or len(uid) < 2:
+            nameOfClass = body.get('nameOfClass')
+            if nameOfClass is None or len(nameOfClass) < 2:
                 return {'message': f'User ID is missing, or is less than 2 characters'}, 210
             # look for password and dob
-            password = body.get('password')
-            dob = body.get('dob')
+            nameOfHomework = body.get('nameOfHomework')
+            nameOfHomework = body.get('nameOfHomework')
 
             ''' #1: Key code block, setup USER OBJECT '''
-            uo = User(name=name, 
-                      uid=uid)
+            uo = User(nameOfStudent=nameOfStudent, 
+                      nameOfClass=nameOfClass)
             
             ''' Additional garbage error checking '''
             # set password if provided
-            if password is not None:
-                uo.set_password(password)
+            if nameOfHomework is not None:
+                uo.nameOfHomework(nameOfHomework)
             # convert to date type
-            if dob is not None:
+
+            _dateDue = body.get('_dateDue')
+            if _dateDue is None or len(_dateDue) < 2:
+                return {'message': f'User ID is missing, or is less than 2 characters'}, 210
+            # look for password and dob
+            _dateDue = body.get('_dateDue')
+    
+            if _dateDue is not None:
                 try:
-                    uo.dob = datetime.strptime(dob, '%m-%d-%Y').date()
+                    uo._dateDue = datetime.strptime(_dateDue, '%m-%d-%Y').date()
                 except:
-                    return {'message': f'Date of birth format error {dob}, must be mm-dd-yyyy'}, 210
+                    return {'message': f'Date of birth format error {_dateDue}, must be mm-dd-yyyy'}, 210
             
             ''' #2: Key Code block to add user to database '''
             # create user in database
@@ -51,7 +58,7 @@ class UserAPI:
             if user:
                 return jsonify(user.read())
             # failure returns error
-            return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 210
+            return {'message': f'Processed {nameOfStudent}, either a format error or User ID {uid} is duplicate'}, 210
 
     class _Read(Resource):
         def get(self):
