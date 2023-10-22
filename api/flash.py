@@ -24,3 +24,30 @@ def get_flashcards():
 
 if __name__ == '__main__':
     app.run(debug=True)
+from flask import Flask, request, jsonify
+
+app = Flask(__name)
+
+# Store chemistry flashcards in-memory (not recommended for production)
+flashcards = []
+
+@app.route('/flashcards', methods=['POST'])
+def create_flashcard():
+    data = request.get_json()
+    if 'topic' in data and 'question' in data and 'answer' in data:
+        flashcard = {
+            'topic': data['topic'],
+            'question': data['question'],
+            'answer': data['answer']
+        }
+        flashcards.append(flashcard)
+        return jsonify({'message': 'Chemistry flashcard created successfully'})
+    else:
+        return jsonify({'error': 'Missing topic, question, or answer'}, 400)
+
+@app.route('/flashcards', methods=['GET'])
+def get_flashcards():
+    return jsonify({'flashcards': flashcards})
+
+if __name__ == '__main__':
+    app.run(debug=True)
