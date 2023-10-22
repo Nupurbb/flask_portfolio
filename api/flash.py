@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 
-app = Flask(__name)
+app = Flask(_chem_name)
 
 # Store flashcards in-memory (not recommended for production)
 flashcards = []
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     app.run(debug=True)
 from flask import Flask, request, jsonify
 
-app = Flask(__name)
+app = Flask(_flash_name)
 
 # Store chemistry flashcards in-memory (not recommended for production)
 flashcards = []
