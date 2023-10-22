@@ -1,46 +1,26 @@
 from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+app = Flask(__name)
 
-# Mock data for flashcards
-flashcards = [
-    {"id": 1, "question": "What is the capital of France?", "answer": "Paris"},
-    {"id": 2, "question": "What is the largest planet in our solar system?", "answer": "Jupiter"},
-]
+# Store flashcards in-memory (not recommended for production)
+flashcards = []
 
-# API endpoint to get all flashcards
-@app.route('/flashcards', methods=['GET'])
-def get_flashcards():
-    return jsonify({"flashcards": flashcards})
-
-# API endpoint to get a specific flashcard by ID
-@app.route('/flashcards/<int:card_id>', methods=['GET'])
-def get_flashcard(card_id):
-    card = next((card for card in flashcards if card["id"] == card_id), None)
-    if card is not None:
-        return jsonify(card)
-    return jsonify({"error": "Flashcard not found"}), 404
-
-# API endpoint to create a new flashcard
 @app.route('/flashcards', methods=['POST'])
 def create_flashcard():
     data = request.get_json()
-    new_id = len(flashcards) + 1
-    flashcard = {"id": new_id, "question": data["question"], "answer": data["answer"]}
-    flashcards.append(flashcard)
-    return jsonify(flashcard), 201
+    if 'question' in data and 'answer' in data:
+        flashcard = {
+            'question': data['question'],
+            'answer': data['answer']
+        }
+        flashcards.append(flashcard)
+        return jsonify({'message': 'Flashcard created successfully'})
+    else:
+        return jsonify({'error': 'Missing question or answer'}, 400)
 
-# API endpoint to update a flashcard by ID
-@app.route('/flashcards/<int:card_id>', methods=['PUT'])
-def update_flashcard(card_id):
-    card = next((card for card in flashcards if card["id"] == card_id), None)
-    if card is not None:
-        data = request.get_json()
-        card["question"] = data["question"]
-        card["answer"] = data["answer"]
-        return jsonify(card)
-    return jsonify({"error": "Flashcard not found"}), 404
+@app.route('/flashcards', methods=['GET'])
+def get_flashcards():
+    return jsonify({'flashcards': flashcards})
 
-# API endpoint to delete a flashcard by ID
-@app.route('/flashcards/<int:card_id>', methods=['DELETE'])
-def delete_flashcard(card_id)
+if __name__ == '__main__':
+    app.run(debug=True)
