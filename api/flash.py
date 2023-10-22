@@ -43,4 +43,4 @@ def update_flashcard(card_id):
 
 # API endpoint to delete a flashcard by ID
 @app.route('/flashcards/<int:card_id>', methods=['DELETE'])
-def delete_flashcard(card_id
+def delete_flashcard(card_id)
